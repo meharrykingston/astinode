@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "nodenext",
+    "moduleResolution": "nodenext", // Zaroori hai NodeNext ke liye
+    "rootDir": "./src",            // Batao ki sara code src mein hai
+    "outDir": "./dist",           // Build files yahan jayengi
+    
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "sourceMap": true
+  },
+  "include": ["src/**/*"],         // Sirf src folder ko compile karo
+  "exclude": ["node_modules"]
+}
