@@ -1,42 +1,58 @@
-import Fastify from 'fastify';
-import cors from '@fastify/cors';
-import dotenv from 'dotenv';
-import mongoose from 'mongoose';
+import Fastify from "fastify";
+import cors from "@fastify/cors";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import pageRoutes from "./routes/pageRoutes.js";
 
 dotenv.config();
 
-const app = Fastify({ 
-  logger: true // Har request terminal mein dikhegi
-});
+function getMongoUri(): string {
+  const uri = process.env.MONGODB_URI || process.env.MONGODB_URL || "";
+  return uri.trim().replace(/^['\"]|['\"]$/g, "");
+}
 
-// CORS: Next.js frontend se request allow karne ke liye
-await app.register(cors, { origin: "*" });
+async function buildServer() {
+  const app = Fastify({ logger: true });
 
-// MongoDB Connection Logic
-const start = async () => {
+  await app.register(cors, {
+    origin: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  });
+
+  app.get("/status", async () => {
+    return {
+      status: "online",
+      database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+      service: "astikan-backend",
+    };
+  });
+
+  await app.register(pageRoutes);
+  return app;
+}
+
+async function start() {
   try {
-    const uri = process.env.MONGODB_URI;
-    if (!uri) {
-      console.error("❌ ERROR: MONGO_URI is not defined in .env");
-      process.exit(1);
-    }
+    const mongoUri = getMongoUri();
+    if (!mongoUri) throw new Error("MONGODB_URI missing in backend/.env");
 
-    await mongoose.connect(uri);
-    app.log.info("✅ MongoDB Connected Successfully!");
+    await mongoose.connect(mongoUri, {
+      tlsAllowInvalidCertificates: process.env.MONGODB_TLS_ALLOW_INVALID_CERTS === "true",
+      connectTimeoutMS: 10000,
+      dbName: process.env.MONGODB_DB_NAME || "astikan",
+    });
 
-    // Railway aur local dono ke liye port setup
-    const port = Number(process.env.PORT) || 8080;
-    await app.listen({ port, host: '0.0.0.0' });
+    const app = await buildServer();
+    const port = Number(process.env.PORT || 4000);
+    await app.listen({ port, host: "0.0.0.0" });
 
-  } catch (err) {
-    app.log.error(err);
+    console.log(`\nServer ready at http://localhost:${port}`);
+    console.log(`MongoDB Connected to: ${process.env.MONGODB_DB_NAME || "astikan"}\n`);
+  } catch (error) {
+    console.error("Startup Error:", error);
     process.exit(1);
   }
-};
-
-// Ek test route taaki browser mein check kar sako
-app.get('/check', async () => {
-  return { status: "OK", message: "Astikan Backend is Running!" };
-});
+}
 
 start();

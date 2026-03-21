@@ -1,0 +1,40 @@
+export declare function normalizeSlug(input: unknown): string;
+export declare function normalizePageKind(value: unknown): string;
+export declare function getPageKindPrefix(pageKind: unknown): string;
+export declare function ensureKindBasedSlug(inputUrl: unknown, pageKind: unknown): string;
+export declare function parseLines(input: unknown): string[];
+export type NormalizedSection = {
+    id: string;
+    heading: string;
+    headingType: "h2" | "h3";
+    body: string;
+};
+export declare function normalizeSections(input: unknown): NormalizedSection[];
+export type ApiPage = {
+    id: string;
+    pageKind: string;
+    overview: string;
+    sections: NormalizedSection[];
+    content: string;
+    quickAnswer: string;
+    titleTag: string;
+    metaTag: string;
+    metaDescription: string;
+    h1Heading: string;
+    url: string;
+    status: "published" | "draft";
+    author: string;
+    headingStructure: {
+        h1: string;
+        h2: string[];
+        h3: string[];
+    };
+    keywordPlacement: string[];
+    altText: string[];
+    imageAltText: string[];
+    internalLinks: string[];
+    views: number;
+    createdAt: string;
+    updatedAt: string;
+};
+export declare function mapPage(doc: any): ApiPage;
