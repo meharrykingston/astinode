@@ -34,6 +34,14 @@ async function buildServer() {
     };
   });
 
+  app.get("/", async () => {
+    return {
+      status: "online",
+      service: "astikan-backend",
+      hint: "Use /status or /api/* routes",
+    };
+  });
+
   await app.register(pageRoutes);
   await app.register(authRoutes);
   await app.register(adminRoutes);
