@@ -13,6 +13,8 @@ const PAGE_KINDS = [
   "other",
 ] as const;
 
+const PAGE_STATUSES = ["draft", "approved", "published"] as const;
+
 const sectionSchema = new Schema(
   {
     id: { type: String, required: true, trim: true },
@@ -44,7 +46,7 @@ const pageSchema = new Schema(
     content: { type: String, default: "" },
     quickAnswer: { type: String, default: "" },
     metaTag: { type: String, default: "" },
-    status: { type: String, default: "draft" },
+    status: { type: String, enum: PAGE_STATUSES, default: "draft" },
     author: { type: String, default: "SEO Team" },
     targetKeyword: { type: String, default: "", trim: true },
     headingStructure: { type: headingStructureSchema, default: () => ({}) },

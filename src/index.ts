@@ -2,7 +2,13 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import net from "node:net";
 import pageRoutes from "./routes/pageRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import logRoutes from "./routes/logRoutes.js";
+import { startCronJobs } from "./services/cronService.js";
+import { ensureDefaultSeoUser, ensureSuperadmin } from "./services/seedService.js";
 
 dotenv.config();
 
@@ -29,7 +35,30 @@ async function buildServer() {
   });
 
   await app.register(pageRoutes);
+  await app.register(authRoutes);
+  await app.register(adminRoutes);
+  await app.register(logRoutes);
   return app;
+}
+
+async function isPortFree(port: number, host: string): Promise<boolean> {
+  return await new Promise((resolve) => {
+    const server = net.createServer();
+    server.unref();
+    server.on("error", () => resolve(false));
+    server.listen({ port, host }, () => {
+      server.close(() => resolve(true));
+    });
+  });
+}
+
+async function findAvailablePort(startPort: number, host: string, maxAttempts = 20): Promise<number> {
+  let port = startPort;
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    if (await isPortFree(port, host)) return port;
+    port += 1;
+  }
+  throw new Error(`No available port found from ${startPort} to ${port - 1}`);
 }
 
 async function start() {
@@ -43,9 +72,16 @@ async function start() {
       dbName: process.env.MONGODB_DB_NAME || "astikan",
     });
 
+    await ensureSuperadmin();
+    await ensureDefaultSeoUser();
+
     const app = await buildServer();
-    const port = Number(process.env.PORT || 4000);
-    await app.listen({ port, host: "0.0.0.0" });
+    const host = "0.0.0.0";
+    const desiredPort = Number(process.env.PORT || 4000);
+    const port = await findAvailablePort(desiredPort, host);
+    await app.listen({ port, host });
+
+    startCronJobs();
 
     console.log(`\nServer ready at http://localhost:${port}`);
     console.log(`MongoDB Connected to: ${process.env.MONGODB_DB_NAME || "astikan"}\n`);

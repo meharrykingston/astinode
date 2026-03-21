@@ -2,8 +2,10 @@ import type { FastifyInstance } from "fastify";
 import Page from "../models/Page.js";
 import {
   ensureKindBasedSlug,
+  isPageStatus,
   mapPage,
   normalizePageKind,
+  normalizePageStatus,
   normalizeSections,
   normalizeSlug,
   parseLines,
@@ -36,6 +38,11 @@ type PageBody = {
 
 type PublishBody = {
   id?: unknown;
+};
+
+type BulkUpdateStatusBody = {
+  ids?: unknown;
+  status?: unknown;
 };
 
 function escapeHtml(input: string): string {
@@ -99,7 +106,7 @@ function buildPayload(body: PageBody, includeCreatedAt = false) {
     metaDescription,
     h1Heading,
     url,
-    status: body.status === "published" ? "published" : "draft",
+    status: normalizePageStatus(body.status),
     author: String(body.author || "SEO Team").trim(),
     targetKeyword: String(body.targetKeyword || "").trim(),
     headingStructure: {
@@ -264,6 +271,38 @@ export default async function pageRoutes(fastify: FastifyInstance) {
     return { page: mapPage(updated.toObject()) };
   });
 
+  fastify.put<{ Body: BulkUpdateStatusBody }>("/api/pages/bulk-update", async (request, reply) => {
+    const body = request.body || {};
+    const ids = Array.isArray(body.ids)
+      ? body.ids
+          .map((id) => String(id || "").trim())
+          .filter((id) => /^[a-fA-F0-9]{24}$/.test(id))
+      : [];
+
+    if (ids.length === 0) {
+      reply.code(400);
+      return { message: "No valid IDs provided" };
+    }
+
+    const rawStatus = String(body.status || "").trim().toLowerCase();
+    if (!isPageStatus(rawStatus)) {
+      reply.code(400);
+      return { message: "Status must be one of: draft, approved, published" };
+    }
+
+    const result = await Page.updateMany(
+      { _id: { $in: ids } },
+      { $set: { status: rawStatus, updatedAt: new Date() } },
+      { runValidators: true },
+    );
+
+    return {
+      ok: true,
+      matchedCount: result.matchedCount,
+      modifiedCount: result.modifiedCount,
+    };
+  });
+
   fastify.put<{ Params: { id: string }; Body: PageBody }>("/api/pages/:id", async (request, reply) => {
     const { id } = request.params;
     if (!id || !/^[a-fA-F0-9]{24}$/.test(id)) {
@@ -312,4 +351,3 @@ export default async function pageRoutes(fastify: FastifyInstance) {
     return { ok: true };
   });
 }
-

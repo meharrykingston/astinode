@@ -96,6 +96,18 @@ export type NormalizedSection = {
   body: string;
 };
 
+export const PAGE_STATUSES = ["draft", "approved", "published"] as const;
+export type PageStatus = (typeof PAGE_STATUSES)[number];
+
+export function isPageStatus(value: unknown): value is PageStatus {
+  return typeof value === "string" && (PAGE_STATUSES as readonly string[]).includes(value);
+}
+
+export function normalizePageStatus(value: unknown): PageStatus {
+  const normalized = String(value || "").trim().toLowerCase();
+  return isPageStatus(normalized) ? normalized : "draft";
+}
+
 export function normalizeSections(input: unknown): NormalizedSection[] {
   if (!Array.isArray(input)) return [];
 
@@ -124,7 +136,7 @@ export type ApiPage = {
   metaDescription: string;
   h1Heading: string;
   url: string;
-  status: "published" | "draft";
+  status: PageStatus;
   author: string;
   headingStructure: {
     h1: string;
@@ -166,7 +178,7 @@ export function mapPage(doc: any): ApiPage {
     metaDescription: doc.metaDescription || "",
     h1Heading: doc.h1Heading || doc.headingStructure?.h1 || doc.titleTag || "",
     url: doc.url || "/",
-    status: doc.status === "published" ? "published" : "draft",
+    status: normalizePageStatus(doc.status),
     author: doc.author || "SEO Team",
     headingStructure: {
       h1: doc.headingStructure?.h1 || "",
