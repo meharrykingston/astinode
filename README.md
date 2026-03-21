@@ -5,7 +5,7 @@ This backend is a Fastify API with MongoDB. It serves SEO pages, superadmin auth
 The folder src routes contains the HTTP routes for pages, auth, admin, and logs. The folder src models contains Mongoose schemas for pages, users, and logs. The folder src services contains cron jobs, log utilities, and seed logic for the initial superadmin. The folder src utils contains JWT and password helpers along with a small auth middleware.
 
 3. Environment
-Set MONGODB_URI for database access. Set JWT_SECRET for token signing. Set SUPERADMIN_EMAIL and SUPERADMIN_PASSWORD to seed the initial superadmin record on first boot. Set SITE_URL to the frontend base URL used by the sitemap job.
+Set MONGODB_URI for database access. Set JWT_SECRET for token signing. Set SUPERADMIN_EMAIL and SUPERADMIN_PASSWORD to seed the initial superadmin record on first boot. Set DEFAULT_SEO_EMAIL and DEFAULT_SEO_PASSWORD to seed an SEO user for IndexControl login. Set SITE_URL to the frontend base URL used by the sitemap job. The root path returns a health payload so Railway does not show a 404 at the base URL.
 
 4. Public API routes
 The pages API serves SEO data to the frontend. It includes endpoints for listing pages, resolving a slug, counting pages, creating and updating pages, bulk upload, and bulk delete. A logs ingestion endpoint accepts frontend events.
@@ -24,3 +24,6 @@ Install dependencies and run the dev server.
 
 npm install
 npm run dev
+
+9. Health endpoints
+The root path returns a short health response. The status route returns database connectivity and service metadata.
