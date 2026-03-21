@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import User from "../models/User.js";
-import { signToken, verifyPassword } from "../utils/auth.js";
+import { signToken, verifyPassword, verifyToken } from "../utils/auth.js";
 import { logEvent } from "../services/logService.js";
 
 type LoginBody = {
