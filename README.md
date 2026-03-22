@@ -27,3 +27,6 @@ npm run dev
 
 9. Health endpoints
 The root path returns a short health response. The status route returns database connectivity and service metadata.
+
+10. Google integrations
+The backend is prepared for Google Search Console and Google Business Profile integrations. Configuration is stored in MongoDB and endpoints are protected by superadmin JWT. External API calls are stubbed until credentials are wired. GSC endpoints include status, config, top queries, and sitemap submission. GMB endpoints include status, config, and location listing.
