@@ -8,7 +8,7 @@ The folder src routes contains the HTTP routes for pages, auth, admin, and logs.
 Set MONGODB_URI for database access. Set JWT_SECRET for token signing. Set SUPERADMIN_EMAIL and SUPERADMIN_PASSWORD to seed the initial superadmin record on first boot. Set DEFAULT_SEO_EMAIL and DEFAULT_SEO_PASSWORD to seed an SEO user for IndexControl login. Set SITE_URL to the frontend base URL used by the sitemap job. The root path returns a health payload so Railway does not show a 404 at the base URL.
 
 4. Public API routes
-The pages API serves SEO data to the frontend. It includes endpoints for listing pages, resolving a slug, counting pages, creating and updating pages, bulk upload, and bulk delete. A logs ingestion endpoint accepts frontend events.
+The pages API serves SEO data to the frontend. It includes endpoints for listing pages, resolving a slug, counting pages, creating and updating pages, bulk upload, and bulk delete. Bulk upload expects a JSON array of page rows (CSV is converted on the frontend). A logs ingestion endpoint accepts frontend events.
 
 5. Superadmin and SEO API routes
 The auth API provides login for the superadmin and SEO panel users. The admin API provides summary metrics, SEO user creation, update, delete, password reset, log listing, and manual job triggers. The SEO auth me endpoint returns the active user profile for session refresh.
