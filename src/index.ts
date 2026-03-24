@@ -7,6 +7,7 @@ import pageRoutes from "./routes/pageRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import logRoutes from "./routes/logRoutes.js";
+import blogRoutes from "./routes/blogRoutes.js";
 import { startCronJobs } from "./services/cronService.js";
 import { ensureDefaultSeoUser, ensureSuperadmin } from "./services/seedService.js";
 
@@ -46,6 +47,7 @@ async function buildServer() {
   await app.register(authRoutes);
   await app.register(adminRoutes);
   await app.register(logRoutes);
+  await app.register(blogRoutes, { prefix: "/api/blogs" });
   return app;
 }
 
