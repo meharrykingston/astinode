@@ -9,6 +9,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import logRoutes from "./routes/logRoutes.js";
 import integrationRoutes from "./routes/integrationRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
+import diagnoseRoutes from "./routes/diagnoseRoutes.js";
 import { startCronJobs } from "./services/cronService.js";
 import { ensureDefaultSeoUser, ensureSuperadmin } from "./services/seedService.js";
 
@@ -22,8 +23,14 @@ function getMongoUri(): string {
 async function buildServer() {
   const app = Fastify({ logger: true });
 
+  const allowedOrigins = (process.env.CORS_ORIGINS || process.env.SITE_URL || "http://localhost:3000")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
   await app.register(cors, {
-    origin: true,
+    origin: allowedOrigins,
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   });
@@ -50,6 +57,7 @@ async function buildServer() {
   await app.register(logRoutes);
   await app.register(integrationRoutes);
   await app.register(blogRoutes, { prefix: "/api/blogs" });
+  await app.register(diagnoseRoutes);
   return app;
 }
 
